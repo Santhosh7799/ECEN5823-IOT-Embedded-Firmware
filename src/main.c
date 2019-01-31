@@ -26,6 +26,8 @@
 #include "em_device.h"
 #include "em_chip.h"
 #include "gpio.h"
+#include "sleep.h"
+#include "letimer.h"
 #ifndef MAX_CONNECTIONS
 #define MAX_CONNECTIONS 4
 #endif
@@ -50,17 +52,17 @@ static const gecko_configuration_t config = {
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
 
-static void delayApproxOneSecond(void)
-{
-	/**
-	 * Wait loops are a bad idea in general!  Don't copy this code in future assignments!
-	 * We'll discuss how to do this a better way in the next assignment.
-	 */
-	volatile int i;
-	for (i = 0; i < 3500000; ) {
-		  i=i+1;
-	}
-}
+//static void delayApproxOneSecond(void)
+//{
+//	/**
+//	 * Wait loops are a bad idea in general!  Don't copy this code in future assignments!
+//	 * We'll discuss how to do this a better way in the next assignment.
+//	 */
+//	volatile int i;
+//	for (i = 0; i < 3500000; ) {
+//		  i=i+1;
+//	}
+//}
 
 
 int main(void)
@@ -77,17 +79,30 @@ int main(void)
   // Initialize stack
   gecko_init(&config);
 
+
+  SLEEP_Init_t SleepInit = {
+        .sleepCallback = NULL,
+        .wakeupCallback = NULL
+     };
+
+
+
+  GPIO_PinOutSet(LED0_port, LED0_pin);
+  SLEEP_InitEx(&SleepInit);
+  letimer_init();
+
+
   /* Infinite loop */
   while (1) {
-	  delayApproxOneSecond();
-	  gpioLed0SetOff();
+	  if(LowestEnergyMode == EM3)
+	  {
+		  EMU_EnterEM3(true);
+	  }
 
-	  delayApproxOneSecond();
-	  gpioLed1SetOff();
-
-	  delayApproxOneSecond();
-	  gpioLed1SetOn();
-	  gpioLed0SetOn();
+	  if(LowestEnergyMode > EM0)
+	  {
+		  SLEEP_Sleep();
+	  }
 
   }
 }
