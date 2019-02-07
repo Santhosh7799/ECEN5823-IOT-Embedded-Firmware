@@ -16,7 +16,7 @@
 uint32_t PrescalerValCal(uint32_t period)
 {
    uint32_t a,b;
-
+   b=0;
    a = (65536000/period);
    if(a >= 32768)
    {
@@ -41,21 +41,13 @@ uint32_t PrescalerValCal(uint32_t period)
 
 void letimer_init()
 {
-	uint32_t Divider,comp0value,comp1value,Clockfreq;
+	uint32_t Divider,comp0value,Clockfreq; //comp1value is removed
 
 	CMU_ClockEnable(cmuClock_HFLE, true);
-	if(LowestEnergyMode < EM3)
-	{
-		CMU_OscillatorEnable (cmuOsc_LFXO, true, true);
-		CMU_ClockSelectSet (cmuClock_LFA, cmuSelect_LFXO);
-		Divider = PrescalerValCal(TOTAL_PERIOD);
-    }
-	else
-	{
-		CMU_OscillatorEnable(cmuOsc_ULFRCO, true, true);
-		CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_ULFRCO);
-	    Divider = 1;
-	}
+
+	CMU_OscillatorEnable (cmuOsc_LFXO, true, true);
+    CMU_ClockSelectSet (cmuClock_LFA, cmuSelect_LFXO);
+	Divider = PrescalerValCal(TOTAL_PERIOD);
 	CMU_ClockEnable(cmuClock_LFA,true);
 	CMU_ClockDivSet(cmuClock_LETIMER0,Divider);
 	CMU_ClockEnable(cmuClock_LETIMER0,true);
@@ -70,24 +62,28 @@ void letimer_init()
 
 
 	comp0value=((Clockfreq*TOTAL_PERIOD)/(Divider*1000));
-	comp1value= ((Clockfreq*LED_ONTIME)/(Divider*1000));
+
 
 	LETIMER_CompareSet(LETIMER0, 0, comp0value);
-	LETIMER_CompareSet(LETIMER0, 1, comp1value);
 
 
-
-	LETIMER_IntEnable(LETIMER0,LETIMER_IF_COMP0);
-	LETIMER_IntEnable(LETIMER0,LETIMER_IF_COMP1);
-	//LETIMER_IntDisable(LETIMER0,LETIMER_IF_UF);
+	LETIMER_IntEnable(LETIMER0,LETIMER_IF_UF);
 	NVIC_EnableIRQ(LETIMER0_IRQn);
 	LETIMER_Enable(LETIMER0, true);
-   if(LowestEnergyMode < EM3 && LowestEnergyMode > EM0)
-   {
-
-	   SLEEP_SleepBlockBegin(LowestEnergyMode+1);
-   }
 }
+
+void timerWaitUs(uint32_t us_wait)
+{
+	uint32_t Clockfreq,Required_ticks,initial_tickvalue,current_tickvalue;
+	Clockfreq = CMU_ClockFreqGet(cmuClock_LFA);
+	Required_ticks = us_wait/Clockfreq ;
+	initial_tickvalue= LETIMER_CounterGet(LETIMER0);
+	do{
+		current_tickvalue = LETIMER_CounterGet(LETIMER0);
+	}while((current_tickvalue - initial_tickvalue) < Required_ticks);
+}
+
+
 
 void LETIMER0_IRQHandler(void)
 {
@@ -95,8 +91,10 @@ void LETIMER0_IRQHandler(void)
   // Get pending flags and clear
   int irq_flags =  LETIMER_IntGet(LETIMER0);
   LETIMER_IntClear(LETIMER0, irq_flags);
-
-
-  GPIO_PinOutToggle(LED0_port, LED0_pin);
+ // if((LETIMER_IF_UF & irq_flags))
+ // {
+  Allow_temp = 1;
+ // }
+ // GPIO_PinOutToggle(LED0_port, LED0_pin);
   __enable_irq();
 }

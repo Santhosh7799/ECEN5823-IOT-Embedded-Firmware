@@ -5,7 +5,6 @@
  *      Author: Dan Walkes
  */
 #include "gpio.h"
-#include "em_gpio.h"
 #include <string.h>
 
 
@@ -13,6 +12,7 @@
 
 void gpioInit()
 {
+
 	//GPIO_DriveStrengthSet(LED0_port, gpioDriveStrengthWeakAlternateStrong);
 	GPIO_DriveStrengthSet(LED0_port, gpioDriveStrengthWeakAlternateWeak);
 	GPIO_PinModeSet(LED0_port, LED0_pin, gpioModePushPull, false);

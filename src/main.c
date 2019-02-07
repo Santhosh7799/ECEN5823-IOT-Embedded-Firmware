@@ -23,11 +23,13 @@
 #include "bspconfig.h"
 #endif
 
+#include "log.h"
 #include "em_device.h"
 #include "em_chip.h"
 #include "gpio.h"
 #include "sleep.h"
 #include "letimer.h"
+#include "i2c_temp.h"
 #ifndef MAX_CONNECTIONS
 #define MAX_CONNECTIONS 4
 #endif
@@ -67,42 +69,38 @@ static const gecko_configuration_t config = {
 
 int main(void)
 {
+
+  float* Temp_value;
+
+  int a;
   // Initialize device
   initMcu();
   // Initialize board
   initBoard();
   // Initialize application
   initApp();
-
+  logInit();
   gpioInit();
+  i2ctemp_init();
 
   // Initialize stack
   gecko_init(&config);
 
 
-  SLEEP_Init_t SleepInit = {
-        .sleepCallback = NULL,
-        .wakeupCallback = NULL
-     };
 
-
-
-  GPIO_PinOutSet(LED0_port, LED0_pin);
-  SLEEP_InitEx(&SleepInit);
   letimer_init();
-
 
   /* Infinite loop */
   while (1) {
-	  if(LowestEnergyMode == EM3)
-	  {
-		  EMU_EnterEM3(true);
-	  }
-
-	  if(LowestEnergyMode > EM0)
-	  {
-		  SLEEP_Sleep();
-	  }
-
+      if(Allow_temp==1)
+     {
+    	  Allow_temp=0;
+    	 a = get_temp_value(Temp_value);
+      }
+      else
+      {
+    	  //EMU_EnterEM3(true);
+	      SLEEP_Sleep();
+      }
   }
 }

@@ -17,9 +17,9 @@
 #include "em_gpio.h"
 #include "em_letimer.h"
 
-#define LED_ONTIME    175
-#define TOTAL_PERIOD  2250
-#define LowestEnergyMode EM2
+
+#define TOTAL_PERIOD  3000
+
 
 typedef enum EnergyModeVal{
 	EM0,
@@ -30,8 +30,9 @@ typedef enum EnergyModeVal{
 }Energystate;
 
 
-
+uint8_t Allow_temp;
 uint32_t PrescalerValCal(uint32_t period);
 void letimer_init();
+void timerWaitUs(uint32_t us_wait);
 
 #endif

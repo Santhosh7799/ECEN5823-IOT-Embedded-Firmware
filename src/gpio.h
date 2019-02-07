@@ -8,6 +8,8 @@
 #ifndef SRC_GPIO_H_
 #define SRC_GPIO_H_
 #include <stdbool.h>
+#include "em_cmu.h"
+#include "em_gpio.h"
 
 #define	LED0_port gpioPortF
 #define LED0_pin  4
