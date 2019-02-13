@@ -16,8 +16,13 @@ EM3         |           48.83uA           |          9.44uA                   | 
 
 Energy Mode | Period (ms)| LED On Time (ms) |
 ------------| -----------|-------------------
+<<<<<<< HEAD
 EM2         |   2.25S      |        175mS
 EM3         |   2.25S      |        175ms
+=======
+EM2         |   TBD      |        TBD
+EM3         |   TBD      |        TBD
+>>>>>>> assignments-base/assignment4
 
 
 **3. ScreenShots**  

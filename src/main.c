@@ -95,7 +95,7 @@ int main(void)
       if(Allow_temp==1)
      {
     	  Allow_temp=0;
-    	 a = get_temp_value(Temp_value);s
+    	 a = get_temp_value(Temp_value);
       }
       else
       {
