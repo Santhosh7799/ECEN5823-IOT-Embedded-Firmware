@@ -84,6 +84,7 @@ void i2ctemp_Sleep()
 	i2ctemp_disable();
 	SchedulerEventSet[EventHandlePowerOff]=1;
 	LOG_INFO("temperature sensor is disabled");
+	timerSetEventInMs(1);
 }
 
 
@@ -103,7 +104,7 @@ int get_temp_value()
 	 a = ((((17572 * (tempData)) / 65536) - 4685)/100);
 
      temp_val = ((((17572 * (float)(tempData)) / 65536) - 4685)/100);
-	 LOG_INFO("read temperature status %d",a);
+	 LOG_INFO("read temperature status %f",temp_val);
 	 i2ctemp_Sleep();
 	return ret_val;
 }

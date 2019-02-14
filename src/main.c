@@ -101,7 +101,7 @@ int main(void)
     		CORE_EXIT_CRITICAL();
              i2ctemp_On();
              next_state =  Temp_Sensor_wait_For_Sensor_Enabled;
-    	     timerSetEventInMs(80);
+    	     timerSetEventInMs(40);
     	 }
     	 break ;
 
@@ -126,6 +126,7 @@ int main(void)
     	     CORE_ENTER_CRITICAL();
     	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
     	     CORE_EXIT_CRITICAL();
+    	     NVIC_DisableIRQ(I2C0_IRQn);
 
     	     i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
     	     next_state =  Temp_Sensor_wait_For_Read_Complete;
@@ -137,6 +138,7 @@ int main(void)
     	     CORE_ENTER_CRITICAL();
     	     SchedulerEventSet[EventHandleI2CTransferFail]=0;
     	     CORE_EXIT_CRITICAL();
+    	     NVIC_DisableIRQ(I2C0_IRQn);
     	     i2c_write_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
     	 }
     	 else
@@ -158,6 +160,7 @@ int main(void)
     	     	     CORE_ENTER_CRITICAL();
     	     	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
     	     	     CORE_EXIT_CRITICAL();
+    	     	    NVIC_DisableIRQ(I2C0_IRQn);
     	     	    get_temp_value();
     	     	     next_state =  Temp_Sensor_wait_For_PowerOff;
     	     	  }
@@ -168,6 +171,7 @@ int main(void)
     	     	     CORE_ENTER_CRITICAL();
     	     	     SchedulerEventSet[EventHandleI2CTransferFail]=0;
     	     	     CORE_EXIT_CRITICAL();
+    	     	    NVIC_DisableIRQ(I2C0_IRQn);
     	     	     i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
     	     	 }
     	     	 else
