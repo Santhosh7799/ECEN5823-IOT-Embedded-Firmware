@@ -8,22 +8,22 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 1. What is the average current per period?
    Answer: 144.04uA
    <br>Screenshot:  
-   ![Avg_current_per_period](screenshots/assignment4/avg_current_per_period.PNG)  
+   ![Avg_current_per_period](Screenshots/assignment4/avg_current_per_period.PNG)  
 
 2. What is the average current when the Si7021 is Load Power Management OFF?
    Answer: 1.68uA
    <br>Screenshot:  
-   ![Avg_current_LPM_Off](screenshots/assignment4/avg_current_lpm_off.PNG)  
+   ![Avg_current_LPM_Off](Screenshots/assignment4/avg_current_lpm_off.PNG)  
 
 3. What is the average current when the Si7021 is Load Power Management ON?
    Answer: 3.81 mA
    <br>Screenshot:  
-   ![Avg_current_LPM_Off](screenshots/assignment4/avg_current_lpm_on.PNG)  
+   ![Avg_current_LPM_Off](Screenshots/assignment4/avg_current_lpm_on.PNG)  
 
 4. How long is the Si7021 Load Power Management ON for 1 temperature reading?
    Answer: 110 mS
    <br>Screenshot:  
-   ![duration_lpm_on](screenshots/assignment4/avg_current_lpm_on.PNG)  
+   ![duration_lpm_on](Screenshots/assignment4/avg_current_lpm_on.PNG)  
 
 5. What is the total operating time of your design for assignment 4 in hours assuming a 1000mAh supply?
    Answer:   the average current consumption is 144.04uA. so, operating time = capacity/current drawn.
