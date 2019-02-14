@@ -8,6 +8,8 @@
 #include "retargetserial.h"
 #include "log.h"
 #include <stdbool.h>
+#include "common.h"
+#include "letimer.h"
 
 #if INCLUDE_LOGGING
 /**
@@ -16,8 +18,12 @@
  */
 uint32_t loggerGetTimestamp(void)
 {
-	//return timerGetRunTimeMilliseconds();
-	return 0;
+	uint32_t PresentTickValue,TimeForPresentCycle,TotalTimeElapsed,	Clockfreq;
+	PresentTickValue= LETIMER_CounterGet(LETIMER0);
+	Clockfreq = CMU_ClockFreqGet(cmuClock_LFA);
+	TimeForPresentCycle = (((TotalTicksPerCycle - PresentTickValue)* 1000)/Clockfreq); // here total is multiplied by 1000 to get value in milliseconds.
+	TotalTimeElapsed = TotalCyclesCompleted * 3 + TimeForPresentCycle;
+	return TotalTimeElapsed ;
 }
 
 /**

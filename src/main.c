@@ -26,13 +26,18 @@
 #include "log.h"
 #include "em_device.h"
 #include "em_chip.h"
+#include "em_core.h"
 #include "gpio.h"
 #include "sleep.h"
 #include "letimer.h"
 #include "i2c_temp.h"
+#include "common.h"
+
 #ifndef MAX_CONNECTIONS
 #define MAX_CONNECTIONS 4
 #endif
+
+
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -54,25 +59,13 @@ static const gecko_configuration_t config = {
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
 
-//static void delayApproxOneSecond(void)
-//{
-//	/**
-//	 * Wait loops are a bad idea in general!  Don't copy this code in future assignments!
-//	 * We'll discuss how to do this a better way in the next assignment.
-//	 */
-//	volatile int i;
-//	for (i = 0; i < 3500000; ) {
-//		  i=i+1;
-//	}
-//}
-
 
 int main(void)
 {
 
-  float* Temp_value;
-
-  int a;
+  float* Temp_value = NULL;
+  enum TempSensorState next_state;
+  TotalCyclesCompleted =0;
   // Initialize device
   initMcu();
   // Initialize board
@@ -90,17 +83,118 @@ int main(void)
 
   letimer_init();
 
+
+  next_state = Temp_Sensor_wait_For_PowerOn;
   /* Infinite loop */
   while (1) {
-      if(Allow_temp==1)
+
+	 SLEEP_Sleep();
+     switch(next_state)
      {
-    	  Allow_temp=0;
-    	 a = get_temp_value(Temp_value);
-      }
-      else
-      {
-    	  //EMU_EnterEM3(true);
-	      SLEEP_Sleep();
-      }
+     case Temp_Sensor_wait_For_PowerOn :
+    	 if(SchedulerEventSet[EventHandlePowerOn])
+    	 {
+    		 CORE_DECLARE_IRQ_STATE;
+    		CORE_ENTER_CRITICAL();
+    		SchedulerEventSet[EventHandlePowerOn]=0;
+    		TotalCyclesCompleted++;
+    		CORE_EXIT_CRITICAL();
+             i2ctemp_On();
+             next_state =  Temp_Sensor_wait_For_Sensor_Enabled;
+    	     timerSetEventInMs(80);
+    	 }
+    	 break ;
+
+     case Temp_Sensor_wait_For_Sensor_Enabled:
+    	 if(SchedulerEventSet[EventHandleI2CEnabled])
+    	 {
+    	     CORE_DECLARE_IRQ_STATE;
+    	     CORE_ENTER_CRITICAL();
+    	     SchedulerEventSet[EventHandleI2CEnabled]=0;
+    	     CORE_EXIT_CRITICAL();
+
+    	     i2c_write_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
+             next_state =  Temp_Sensor_wait_For_Write_Complete;
+    	 }
+
+
+    	 break ;
+     case Temp_Sensor_wait_For_Write_Complete :
+    	 if( SchedulerEventSet[EventHandleI2CTransferComplete])
+    	  {
+    		 CORE_DECLARE_IRQ_STATE;
+    	     CORE_ENTER_CRITICAL();
+    	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
+    	     CORE_EXIT_CRITICAL();
+
+    	     i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
+    	     next_state =  Temp_Sensor_wait_For_Read_Complete;
+    	  }
+       	 else if(SchedulerEventSet[EventHandleI2CTransferFail])
+    	 {
+
+    	     CORE_DECLARE_IRQ_STATE;
+    	     CORE_ENTER_CRITICAL();
+    	     SchedulerEventSet[EventHandleI2CTransferFail]=0;
+    	     CORE_EXIT_CRITICAL();
+    	     i2c_write_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
+    	 }
+    	 else
+    	 {
+    		 if( SchedulerEventSet[EventHandleI2CTransferInProgress])
+    		 	  {
+    		    		 CORE_DECLARE_IRQ_STATE;
+    		    	     CORE_ENTER_CRITICAL();
+    		    	     SchedulerEventSet[EventHandleI2CTransferInProgress]=0;
+    		    	     CORE_EXIT_CRITICAL();
+    		       }
+    	 }
+
+         break ;
+     case 	Temp_Sensor_wait_For_Read_Complete:
+    	 if( SchedulerEventSet[EventHandleI2CTransferComplete])
+    	     	  {
+    	     		 CORE_DECLARE_IRQ_STATE;
+    	     	     CORE_ENTER_CRITICAL();
+    	     	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
+    	     	     CORE_EXIT_CRITICAL();
+    	     	    get_temp_value();
+    	     	     next_state =  Temp_Sensor_wait_For_PowerOff;
+    	     	  }
+    	        	 else if(SchedulerEventSet[EventHandleI2CTransferFail])
+    	     	 {
+
+    	     	     CORE_DECLARE_IRQ_STATE;
+    	     	     CORE_ENTER_CRITICAL();
+    	     	     SchedulerEventSet[EventHandleI2CTransferFail]=0;
+    	     	     CORE_EXIT_CRITICAL();
+    	     	     i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
+    	     	 }
+    	     	 else
+    	     	 {
+    	     		 if( SchedulerEventSet[EventHandleI2CTransferInProgress])
+    	     		 	  {
+    	     		    		 CORE_DECLARE_IRQ_STATE;
+    	     		    	     CORE_ENTER_CRITICAL();
+    	     		    	     SchedulerEventSet[EventHandleI2CTransferInProgress]=0;
+    	     		    	     CORE_EXIT_CRITICAL();
+    	     		       }
+    	     	 }
+
+    	 break;
+     case Temp_Sensor_wait_For_PowerOff:
+    	 if( SchedulerEventSet[EventHandlePowerOff])
+    	   {
+    	    CORE_DECLARE_IRQ_STATE;
+    	    CORE_ENTER_CRITICAL();
+    		SLEEP_SleepBlockEnd (I2C_WORKING_ENERGY_MODE+1);
+    		CORE_EXIT_CRITICAL();
+    	    next_state = Temp_Sensor_wait_For_PowerOn;
+    	   }
+    	 break;
+     default:
+    	 break;
+     }
+
   }
 }

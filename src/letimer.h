@@ -16,6 +16,7 @@
 #include "em_cmu.h"
 #include "em_gpio.h"
 #include "em_letimer.h"
+#include "common.h"
 
 
 #define TOTAL_PERIOD  3000
@@ -34,5 +35,6 @@ uint8_t Allow_temp;
 uint32_t PrescalerValCal(uint32_t period);
 void letimer_init();
 void timerWaitUs(uint32_t us_wait);
+void timerSetEventInMs(uint32_t ms_wait);
 
 #endif

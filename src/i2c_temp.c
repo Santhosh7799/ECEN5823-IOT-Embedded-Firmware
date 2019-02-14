@@ -17,7 +17,12 @@
 
 #include "i2c_temp.h"
 #include "em_i2c.h"
+#include "em_core.h"
 #include "log.h"
+#include "common.h"
+
+I2C_TransferSeq_TypeDef seq;
+uint8_t buffer[3] = {0};
 
 volatile I2C_TransferReturn_TypeDef i2c_status;
 void i2ctemp_init()
@@ -36,6 +41,7 @@ void i2ctemp_init()
 		    i2cClockHLRStandard,        /* Set to use 4:4 low/high duty cycle */       \
 		  };
 	I2CSPM_Init(&init_temp);
+
 	LOG_INFO("temperature sensor is initialized");
 }
 
@@ -52,11 +58,12 @@ void i2ctemp_disable()
 //wakes up the sensor
 void i2ctemp_On()
 {
+	CORE_DECLARE_IRQ_STATE;
+	CORE_ENTER_CRITICAL();
+	SLEEP_SleepBlockBegin(I2C_WORKING_ENERGY_MODE+1);
+	CORE_EXIT_CRITICAL();
+
 	i2ctemp_enable();
-
-	//need to modify this part
-	timerWaitUs(18000);
-
 
 	GPIO_PinModeSet(I2C0_SCL_PORT, I2C0_SCL_PIN, gpioModeWiredAnd, 1);
 	GPIO_PinModeSet(I2C0_SDA_PORT, I2C0_SDA_PIN, gpioModeWiredAnd, 1);
@@ -75,41 +82,35 @@ void i2ctemp_Sleep()
 	GPIO_PinModeSet(I2C0_SCL_PORT, I2C0_SCL_PIN, gpioModeDisabled, 1);
 	GPIO_PinModeSet(I2C0_SDA_PORT, I2C0_SDA_PIN, gpioModeDisabled, 1);
 	i2ctemp_disable();
+	SchedulerEventSet[EventHandlePowerOff]=1;
 	LOG_INFO("temperature sensor is disabled");
 }
 
 
 
-int get_temp_value(float* Temp_value)
+int get_temp_value()
 {
 	int ret_val = 0;
-	uint16_t tempData = 0;
-	uint16_t a=0;
+	uint32_t tempData = 0;
+	uint32_t a=0;
+	float temp_val =0;
 
-	i2ctemp_On();
+	// assuming its a 7 bit address with temperature resolution of 10
+	tempData= (uint16_t)(((uint16_t)buffer[1]) << 8);
+	tempData  = ((tempData ) |(buffer[2] & 0xFC));
 
-	SLEEP_SleepBlockBegin(I2C_WORKING_ENERGY_MODE+1);
-
-	ret_val = i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD,&tempData);
-
-	if (ret_val < 0)
-	{
-		return ret_val;
-	}
 	LOG_INFO("I2C_transaction successfull %d",ret_val);
 	 a = ((((17572 * (tempData)) / 65536) - 4685)/100);
 
-*Temp_value = ((((17572 * (float)(tempData)) / 65536) - 4685)/100);
+     temp_val = ((((17572 * (float)(tempData)) / 65536) - 4685)/100);
 	 LOG_INFO("read temperature status %d",a);
-	SLEEP_SleepBlockEnd (I2C_WORKING_ENERGY_MODE+1);
 	 i2ctemp_Sleep();
 	return ret_val;
 }
 
-int i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr, uint16_t *Temp_data)
+void i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
 {
-	I2C_TransferSeq_TypeDef seq;
-	uint8_t buffer[3] = {0};
+
 
 
 	//since using 7 -bit address mode, we shift the address
@@ -119,24 +120,64 @@ int i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr, uint
 	seq.buf[0].data = buffer;
 	seq.buf[0].len = 1;
 
-	seq.flags = I2C_FLAG_WRITE_READ;
+	seq.flags = I2C_FLAG_READ;
 
 	seq.buf[1].data = buffer+1;
 	seq.buf[1].len = 2;
 
-	i2c_status = I2CSPM_Transfer(I2C0, &seq);
+	I2C_TransferInit(I2C0, &seq);
+	  NVIC_EnableIRQ(I2C0_IRQn);
+}
 
-	*Temp_data = (uint16_t)(((uint16_t)buffer[1]) << 8);
-	*Temp_data  = ((*Temp_data ) |(buffer[2] & 0xFC));
+void i2c_write_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
+{
 
-	return i2c_status;
+
+
+	//since using 7 -bit address mode, we shift the address
+	seq.addr = (uint16_t)((slaveAddr<<1) & ((uint8_t)0xFE));
+
+	buffer[0] =  reg_addr;
+	seq.buf[0].data = buffer;
+	seq.buf[0].len = 1;
+
+	seq.flags = I2C_FLAG_WRITE;
+
+	buffer[1] = 0;
+	seq.buf[1].data = buffer+1;
+	seq.buf[1].len = 1;
+
+	I2C_TransferInit(I2C0, &seq);
+	  NVIC_EnableIRQ(I2C0_IRQn);
+
+
 }
 
 
 
 
+void I2C0_IRQHandler()
+{
 
+		//Just run the I2C_Transfer function that checks interrupts flags and returns the appropriate status
+	i2c_status	=I2C_Transfer(I2C0);
+	if(i2c_status != i2cTransferInProgress)
+	{
+		if(i2c_status == i2cTransferDone)
+		{
+		    SchedulerEventSet[EventHandleI2CTransferComplete]=1;
+		}
+		else
+		{
+			SchedulerEventSet[EventHandleI2CTransferFail]=1;
+		}
+	}
+	else
+	{
+		SchedulerEventSet[EventHandleI2CTransferInProgress]=1;
+	}
 
+}
 
 
 

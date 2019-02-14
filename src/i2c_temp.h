@@ -31,8 +31,9 @@ void i2ctemp_enable();
 void i2ctemp_disable();
 void i2ctemp_On();
 void i2ctemp_Sleep();
-int i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr, uint16_t *Temp_data);
-int get_temp_value(float* Temp_value);
+void i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr);
+void i2c_write_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr);
+int get_temp_value();
 
 #endif
 
