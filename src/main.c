@@ -63,7 +63,7 @@ static const gecko_configuration_t config = {
 int main(void)
 {
 
-  float* Temp_value = NULL;
+//  float* Temp_value = NULL;
   enum TempSensorState next_state;
   TotalCyclesCompleted =0;
   // Initialize device
@@ -79,6 +79,13 @@ int main(void)
   // Initialize stack
   gecko_init(&config);
 
+
+  SLEEP_Init_t SleepInit = {
+          .sleepCallback = NULL,
+          .wakeupCallback = NULL
+       };
+
+    SLEEP_InitEx(&SleepInit);
 
 
   letimer_init();
