@@ -26,6 +26,8 @@
 #define TEMP_READ_REG_ADD	(0xE3)
 #define I2C_WORKING_ENERGY_MODE (EM1)
 
+
+
 void i2ctemp_init();
 void i2ctemp_enable();
 void i2ctemp_disable();

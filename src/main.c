@@ -72,9 +72,9 @@ int main(void)
   initBoard();
   // Initialize application
   initApp();
-  logInit();
+
   gpioInit();
-  i2ctemp_init();
+
 
   // Initialize stack
   gecko_init(&config);
@@ -87,10 +87,9 @@ int main(void)
 
     SLEEP_InitEx(&SleepInit);
 
-
   letimer_init();
-
-
+  logInit();
+  i2ctemp_init();
   next_state = Temp_Sensor_wait_For_PowerOn;
   /* Infinite loop */
   while (1) {
@@ -104,11 +103,11 @@ int main(void)
     		 CORE_DECLARE_IRQ_STATE;
     		CORE_ENTER_CRITICAL();
     		SchedulerEventSet[EventHandlePowerOn]=0;
-    		TotalCyclesCompleted++;
+//    		TotalCyclesCompleted++;
     		CORE_EXIT_CRITICAL();
              i2ctemp_On();
              next_state =  Temp_Sensor_wait_For_Sensor_Enabled;
-    	     timerSetEventInMs(40);
+     	     timerSetEventInMs(80);
     	 }
     	 break ;
 
@@ -134,7 +133,7 @@ int main(void)
     	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
     	     CORE_EXIT_CRITICAL();
     	     NVIC_DisableIRQ(I2C0_IRQn);
-
+    		   LOG_DEBUG("temperature sensor write is successull\n");
     	     i2c_read_tempreg(I2C0,SLAVE_ADDR, TEMP_READ_REG_ADD);
     	     next_state =  Temp_Sensor_wait_For_Read_Complete;
     	  }
@@ -163,11 +162,13 @@ int main(void)
      case 	Temp_Sensor_wait_For_Read_Complete:
     	 if( SchedulerEventSet[EventHandleI2CTransferComplete])
     	     	  {
+
     	     		 CORE_DECLARE_IRQ_STATE;
     	     	     CORE_ENTER_CRITICAL();
     	     	     SchedulerEventSet[EventHandleI2CTransferComplete]=0;
     	     	     CORE_EXIT_CRITICAL();
     	     	    NVIC_DisableIRQ(I2C0_IRQn);
+    	     	   LOG_DEBUG("temperature sensor read is successull\n");
     	     	    get_temp_value();
     	     	     next_state =  Temp_Sensor_wait_For_PowerOff;
     	     	  }

@@ -12,7 +12,8 @@
 #include "gpio.h"
 #include "sleep.h"
 
-
+uint32_t TotalCyclesCompleted = 0;
+uint32_t Reload_value =0;
 uint32_t PrescalerValCal(uint32_t period)
 {
    uint32_t a,b;
@@ -62,7 +63,7 @@ void letimer_init()
 
 
 	comp0value=((Clockfreq*TOTAL_PERIOD)/(Divider*1000));
-
+	Reload_value = comp0value;
 
 	LETIMER_CompareSet(LETIMER0, 0, comp0value);
 
@@ -74,7 +75,7 @@ void letimer_init()
 
 void timerWaitUs(uint32_t us_wait)
 {
-	GPIO_PinOutSet(LED0_port, LED0_pin);
+//	GPIO_PinOutSet(LED0_port, LED0_pin);
 	uint32_t Clockfreq,Required_ticks,initial_tickvalue,comp1value;
 	Clockfreq = CMU_ClockFreqGet(cmuClock_LFA);
 	Required_ticks = us_wait/Clockfreq ;
@@ -85,7 +86,7 @@ void timerWaitUs(uint32_t us_wait)
 	}
 	else
 	{
-		comp1value = 65535 - (Required_ticks - initial_tickvalue);
+		comp1value = Reload_value - (Required_ticks - initial_tickvalue);
 	}
 	LETIMER_CompareSet(LETIMER0, 0, comp1value);
 	LETIMER_IntEnable(LETIMER0,LETIMER_IF_COMP1);
@@ -98,10 +99,10 @@ void timerWaitUs(uint32_t us_wait)
 
 void timerSetEventInMs(uint32_t ms_wait)
 {
-	GPIO_PinOutSet(LED0_port, LED0_pin);
+//	GPIO_PinOutSet(LED0_port, LED0_pin);
 	uint32_t Clockfreq,Required_ticks,initial_tickvalue,comp1value;
 
-	Clockfreq = CMU_ClockFreqGet(cmuClock_LFA);
+	Clockfreq = CMU_ClockFreqGet(cmuClock_LETIMER0);
 	Required_ticks = (ms_wait*Clockfreq)/1000 ;
 	initial_tickvalue= LETIMER_CounterGet(LETIMER0);
 	if(Required_ticks < initial_tickvalue)
@@ -110,22 +111,12 @@ void timerSetEventInMs(uint32_t ms_wait)
 	}
 	else
 	{
-		comp1value = 65535 - (Required_ticks - initial_tickvalue);
+		comp1value = Reload_value - (Required_ticks - initial_tickvalue);
 	}
 	LETIMER_CompareSet(LETIMER0, 1, comp1value);
-	LETIMER_IntEnable(LETIMER0,LETIMER_IF_COMP1);
+    LETIMER_IntClear(LETIMER0,LETIMER_IF_COMP1);
+	LETIMER_IntEnable(LETIMER0,LETIMER_IEN_COMP1);
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -139,13 +130,13 @@ void LETIMER0_IRQHandler(void)
   if((LETIMER_IF_UF & irq_flags))
   {
 	  SchedulerEventSet[EventHandlePowerOn]=1;
-
+	  TotalCyclesCompleted++;
   }
   if((LETIMER_IF_COMP1 & irq_flags))
   {
 	  SchedulerEventSet[EventHandleI2CEnabled]=1;
 	  LETIMER_IntDisable(LETIMER0,LETIMER_IF_COMP1);
-	  GPIO_PinOutClear(LED0_port, LED0_pin);
+//	  GPIO_PinOutClear(LED0_port, LED0_pin);
   }
  //GPIO_PinOutToggle(LED0_port, LED0_pin);
 

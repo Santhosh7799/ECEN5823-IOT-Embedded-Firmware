@@ -18,6 +18,8 @@
 #include "em_letimer.h"
 #include "common.h"
 
+extern uint32_t TotalCyclesCompleted;
+extern uint32_t Reload_value;
 
 #define TOTAL_PERIOD  3000
 

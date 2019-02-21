@@ -20,9 +20,9 @@ uint32_t loggerGetTimestamp(void)
 {
 	uint32_t PresentTickValue,TimeForPresentCycle,TotalTimeElapsed,	Clockfreq;
 	PresentTickValue= LETIMER_CounterGet(LETIMER0);
-	Clockfreq = CMU_ClockFreqGet(cmuClock_LFA);
-	TimeForPresentCycle = (((TotalTicksPerCycle - PresentTickValue)* 1000)/Clockfreq); // here total is multiplied by 1000 to get value in milliseconds.
-	TotalTimeElapsed = TotalCyclesCompleted * 3 + TimeForPresentCycle;
+	Clockfreq = CMU_ClockFreqGet(cmuClock_LETIMER0);
+	TimeForPresentCycle = (((Reload_value - PresentTickValue)* 1000)/Clockfreq); // here total is multiplied by 1000 to get value in milliseconds.
+	TotalTimeElapsed = TotalCyclesCompleted * 3000 + TimeForPresentCycle;
 	return TotalTimeElapsed ;
 }
 

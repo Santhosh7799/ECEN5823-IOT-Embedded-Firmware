@@ -42,7 +42,7 @@ void i2ctemp_init()
 		  };
 	I2CSPM_Init(&init_temp);
 
-	LOG_INFO("temperature sensor is initialized");
+	LOG_DEBUG("temperature sensor is initialized \n");
 }
 
 void i2ctemp_enable()
@@ -63,7 +63,11 @@ void i2ctemp_On()
 	SLEEP_SleepBlockBegin(I2C_WORKING_ENERGY_MODE+1);
 	CORE_EXIT_CRITICAL();
 
-	i2ctemp_enable();
+
+	buffer[0] = 0;
+	buffer[1] = 0;
+	buffer[2] = 0;
+    i2ctemp_enable();
 
 	GPIO_PinModeSet(I2C0_SCL_PORT, I2C0_SCL_PIN, gpioModeWiredAnd, 1);
 	GPIO_PinModeSet(I2C0_SDA_PORT, I2C0_SDA_PIN, gpioModeWiredAnd, 1);
@@ -74,7 +78,7 @@ void i2ctemp_On()
 		GPIO_PinOutClear(I2C0_SCL_PORT, I2C0_SCL_PIN);
 		GPIO_PinOutSet(I2C0_SCL_PORT, I2C0_SCL_PIN);
    }
-   LOG_INFO("temperature sensor is ready to use");
+   LOG_DEBUG("temperature sensor is ready to use\n");
 }
 
 void i2ctemp_Sleep()
@@ -83,7 +87,7 @@ void i2ctemp_Sleep()
 	GPIO_PinModeSet(I2C0_SDA_PORT, I2C0_SDA_PIN, gpioModeDisabled, 1);
 	i2ctemp_disable();
 	SchedulerEventSet[EventHandlePowerOff]=1;
-	LOG_INFO("temperature sensor is disabled");
+	LOG_DEBUG("temperature sensor is disabled\n");
 	timerSetEventInMs(1);
 }
 
@@ -95,24 +99,24 @@ int get_temp_value()
 	uint32_t tempData = 0;
 	uint32_t a=0;
 	float temp_val =0;
+	float test =1.234;
 
 	// assuming its a 7 bit address with temperature resolution of 10
-	tempData= (uint16_t)(((uint16_t)buffer[1]) << 8);
-	tempData  = ((tempData ) |(buffer[2] & 0xFC));
+	tempData= (uint16_t)(((uint16_t)buffer[0]) << 8);
+	tempData  = ((tempData ) |(buffer[1] & 0xFC));
 
-	LOG_INFO("I2C_transaction successfull %d",ret_val);
+	LOG_INFO("I2C_transaction successfull %d \n",tempData);
 	 a = ((((17572 * (tempData)) / 65536) - 4685)/100);
 
+
      temp_val = ((((17572 * (float)(tempData)) / 65536) - 4685)/100);
-	 LOG_INFO("read temperature status %f",temp_val);
+	 LOG_INFO("read temperature in float %f \n",temp_val);
 	 i2ctemp_Sleep();
 	return ret_val;
 }
 
 void i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
 {
-
-
 
 	//since using 7 -bit address mode, we shift the address
 	seq.addr = (uint16_t)((slaveAddr<<1) & ((uint8_t)0xFE));
@@ -122,18 +126,16 @@ void i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
 	seq.buf[0].len = 1;
 
 	seq.flags = I2C_FLAG_READ;
-
+    buffer[1] = 0;
 	seq.buf[1].data = buffer+1;
 	seq.buf[1].len = 2;
 
-	I2C_TransferInit(I2C0, &seq);
+	I2C_TransferInit(i2c, &seq);
 	  NVIC_EnableIRQ(I2C0_IRQn);
 }
 
 void i2c_write_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
 {
-
-
 
 	//since using 7 -bit address mode, we shift the address
 	seq.addr = (uint16_t)((slaveAddr<<1) & ((uint8_t)0xFE));
@@ -148,7 +150,7 @@ void i2c_write_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
 	seq.buf[1].data = buffer+1;
 	seq.buf[1].len = 1;
 
-	I2C_TransferInit(I2C0, &seq);
+	I2C_TransferInit(i2c, &seq);
 	  NVIC_EnableIRQ(I2C0_IRQn);
 
 

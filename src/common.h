@@ -6,7 +6,7 @@
 #define TotalTicksPerCycle 65535     //FFFF is the total ticks
 #define TimePerTick 1/32768          //assuming clock frequency of 32768Hz.
 #define TimeTakenPerCycle 2000          //this is in ms and assuming clock frequency of 32768Hz.
-uint32_t TotalCyclesCompleted;
+
 
  enum TempSensorState{
 	Temp_Sensor_wait_For_PowerOn,
