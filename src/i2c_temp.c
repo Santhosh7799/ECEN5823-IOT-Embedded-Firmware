@@ -59,10 +59,10 @@ void i2ctemp_disable()
 //wakes up the sensor
 void i2ctemp_On()
 {
-/*	CORE_DECLARE_IRQ_STATE;
+	CORE_DECLARE_IRQ_STATE;
 	CORE_ENTER_CRITICAL();
 	SLEEP_SleepBlockBegin(I2C_WORKING_ENERGY_MODE+1);
-	CORE_EXIT_CRITICAL();*/
+	CORE_EXIT_CRITICAL();
 
 
 	buffer[0] = 0;
