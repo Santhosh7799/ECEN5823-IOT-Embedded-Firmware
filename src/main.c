@@ -44,19 +44,29 @@
 //function to convert and send the temp value. This function is  a modified vertion from BLE_THERMOMETER developed by si labs
 void Updatetemperature(float tempData)
 {
-  uint8_t TempBuffer[5]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
+  uint8_t TempBuffer[14]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
   uint8_t flags = 0x00;   /* flags set as 0 for Celsius, no time stamp and no temperature type. */
   uint8_t *p = TempBuffer; /* Pointer to HTM temperature buffer needed for converting values to bitstream. */
   /* Convert flags to bitstream and append them in the temperature data buffer (TempBuffer) */
    UINT8_TO_BITSTREAM(p, flags);
 
 
-  UINT32_TO_BITSTREAM(p, (FLT_TO_UINT32(tempData, -3)));
+  UINT32_TO_BITSTREAM(p, (FLT_TO_UINT32(tempData*1000, -3)));
+  printf("\n sending value %f\n",tempData);
+
+
+    UINT16_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p, 0);
+  	UINT8_TO_BITSTREAM(p,3);
 
 
    /* This enables the Health Thermometer in the Blue Gecko app to display the temperature.
    *  0xFF as connection ID will send indications to all connections. */
-  gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, TempBuffer);
+  gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 14, TempBuffer);
 }
 
 
@@ -91,8 +101,7 @@ static const gecko_configuration_t config = {
 };
 
 
-int main(void)
-{
+int main(void){
 
 //  float* Temp_value = NULL;
   enum TempSensorState next_state;
