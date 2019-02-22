@@ -51,7 +51,7 @@ void Updatetemperature(float tempData)
    UINT8_TO_BITSTREAM(p, flags);
 
 
-  UINT32_TO_BITSTREAM(p, (FLT_TO_UINT32(tempData*1000, -3)));
+//  UINT32_TO_BITSTREAM(p, (FLT_TO_UINT32(tempData*1000, -3)));
   printf("\n sending value %f\n",tempData);
 
 
