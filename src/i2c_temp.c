@@ -20,6 +20,7 @@
 #include "em_core.h"
 #include "log.h"
 #include "common.h"
+#include "native_gecko.h"
 
 I2C_TransferSeq_TypeDef seq;
 uint8_t buffer[3] = {0};
@@ -93,26 +94,23 @@ void i2ctemp_Sleep()
 
 
 
-int get_temp_value()
+float get_temp_value()
 {
 	int ret_val = 0;
 	uint32_t tempData = 0;
-	uint32_t a=0;
 	float temp_val =0;
-	float test =1.234;
+
 
 	// assuming its a 7 bit address with temperature resolution of 10
 	tempData= (uint16_t)(((uint16_t)buffer[0]) << 8);
 	tempData  = ((tempData ) |(buffer[1] & 0xFC));
 
 	LOG_INFO("I2C_transaction successfull %d \n",tempData);
-	 a = ((((17572 * (tempData)) / 65536) - 4685)/100);
-
 
      temp_val = ((((17572 * (float)(tempData)) / 65536) - 4685)/100);
 	 LOG_INFO("read temperature in float %f \n",temp_val);
 	 i2ctemp_Sleep();
-	return ret_val;
+	return temp_val;
 }
 
 void i2c_read_tempreg(I2C_TypeDef *i2c, uint8_t slaveAddr, uint8_t reg_addr)
@@ -169,15 +167,18 @@ void I2C0_IRQHandler()
 		if(i2c_status == i2cTransferDone)
 		{
 		    SchedulerEventSet[EventHandleI2CTransferComplete]=1;
+		    gecko_external_signal(EventHandleI2CTransferComplete);
 		}
 		else
 		{
 			SchedulerEventSet[EventHandleI2CTransferFail]=1;
+			gecko_external_signal(EventHandleI2CTransferFail);
 		}
 	}
 	else
 	{
 		SchedulerEventSet[EventHandleI2CTransferInProgress]=1;
+		gecko_external_signal(EventHandleI2CTransferInProgress);
 	}
 
 }

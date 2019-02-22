@@ -131,11 +131,13 @@ void LETIMER0_IRQHandler(void)
   {
 	  SchedulerEventSet[EventHandlePowerOn]=1;
 	  TotalCyclesCompleted++;
+	  gecko_external_signal(EventHandlePowerOn);
   }
   if((LETIMER_IF_COMP1 & irq_flags))
   {
 	  SchedulerEventSet[EventHandleI2CEnabled]=1;
 	  LETIMER_IntDisable(LETIMER0,LETIMER_IF_COMP1);
+	  gecko_external_signal(EventHandleI2CEnabled);
 //	  GPIO_PinOutClear(LED0_port, LED0_pin);
   }
  //GPIO_PinOutToggle(LED0_port, LED0_pin);
