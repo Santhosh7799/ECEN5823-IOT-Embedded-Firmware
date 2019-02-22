@@ -10,35 +10,35 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    ![advertising_period](screenshots/assignment5/advertising_period.png)  
 
 2. What is the average current between advertisements?
-   Answer:
+   Answer: 32.14uA
    <br>Screenshot:  
-   ![avg_current_between_advertisements](screenshots/assignment5/avg_current_between_advertisements.png)  
+   ![avg_current_between_advertisements](Screenshots/assignment5/avg_current_between_advertisements.png)  
 
 3. What is the peak current of an advertisement? 
-   Answer:
+   Answer: 10.3mA
    <br>Screenshot:  
-   ![peak_current_of_advertisement](screenshots/assignment5/peak_current_of_advertisement.png)  
+   ![peak_current_of_advertisement](Screenshots/assignment5/peak_current_of_advertisement.png)  
 
 4. Provide screen shot verifying the connection interval setting matches the value required for the assignment.
    <br>Screenshot: 
-   ![connection_interval](screenshots/assignment5/connection_interval.png)  
+   ![connection_interval](Screenshots/assignment5/connection_interval.png)  
 
 5. What is the average current between connection intervals?
-   Answer:
+   Answer: 32.9uA
    <br>Screenshot:  
    ![avg_current_between_connection_intervals](screenshots/assignment5/avg_current_between_connection_intervals.png)  
 
 6. Provide screen shot verifying the slave latency matches the value required for the assignment. 
    <br>Screenshot:  
-   ![slave_latency](screenshots/assignment5/slave_latency.png)  
+   ![slave_latency](Screenshots/assignment5/slave_latency.png)  
 
 7. What is the peak current of a data transmission when the phone is connected and placed next to the Blue Gecko? 
-   Answer:
+   Answer: 10.9mA
    <br>Screenshot:  
-   ![peak_current_phone_next_to](screenshots/assignment5/peak_current_phone_next_to.png)  
+   ![peak_current_phone_next_to](Screenshots/assignment5/peak_current_phone_next_to.png)  
    
 8. What is the peak current of a data transmission when the phone is connected and placed 20 feet away from the Blue Gecko? 
-   Answer:
+   Answer:10.93mA
    <br>Screenshot:  
-   ![peak_current_phone_20ft_away](screenshots/assignment5/peak_current_phone_20ft_away.png)  
+   ![peak_current_phone_20ft_away](Screenshots/assignment5/peak_current_phone_20ft_away.png)  
    
