@@ -159,21 +159,24 @@ int main(void){
 	       case gecko_evt_le_connection_rssi_id:
 
 	 			rssi = evt->data.evt_le_connection_rssi.rssi;
-	 			gecko_cmd_system_halt(1);
+	 			int newTxPower;
 	 			if(rssi > -35)
-	 				gecko_cmd_system_set_tx_power(BLE_TX_MIN);
+	 				newTxPower = BLE_TX_MIN;
 	 			else if(rssi > -45)
-	 				gecko_cmd_system_set_tx_power(-200);
+	 				newTxPower = -200;
 	 			else if(rssi > -55)
-	 				gecko_cmd_system_set_tx_power(-150);
+	 				newTxPower = -150;
 	 			else if(rssi > -65)
-	 				gecko_cmd_system_set_tx_power(-50);
+	 				newTxPower = -50;
 	 			else if(rssi > -75)
-	 				gecko_cmd_system_set_tx_power(0);
+	 				newTxPower = 0;
 	 			else if(rssi > -85)
-	 				gecko_cmd_system_set_tx_power(50);
+	 				newTxPower = 50;
 	 			else
-	 				gecko_cmd_system_set_tx_power(BLE_TX_MAX);
+	 				newTxPower = BLE_TX_MAX;
+
+	 			gecko_cmd_system_halt(1);
+	 			gecko_cmd_system_set_tx_power(newTxPower);
 	 			gecko_cmd_system_halt(0);
 	 			break;
 
