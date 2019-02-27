@@ -149,12 +149,12 @@ int main(void){
 
 	            break;
 
-//	       case gecko_evt_gatt_server_characteristic_status_id:
-//	     	  if (evt-> data.evt_gatt_server_characteristic_status.status_flags == gatt_server_confirmation)
-//	     	  {
-//	     		  gecko_cmd_le_connection_get_rssi(evt-> data.evt_gatt_server_characteristic_status.connection);
-//	     	  }
-//	         break;
+	       case gecko_evt_gatt_server_characteristic_status_id:
+	     	  if (evt-> data.evt_gatt_server_characteristic_status.status_flags == gatt_server_confirmation)
+	     	  {
+	     		  gecko_cmd_le_connection_get_rssi(evt-> data.evt_gatt_server_characteristic_status.connection);
+	     	  }
+	         break;
 // For Updating the transmission power. this function takes input in 0.1dbm units. so all the values are converted.
 	       case gecko_evt_le_connection_rssi_id:
 
